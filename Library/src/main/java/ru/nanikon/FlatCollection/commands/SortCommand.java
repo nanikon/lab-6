@@ -4,19 +4,16 @@ import ru.nanikon.FlatCollection.arguments.AbstractArgument;
 import ru.nanikon.FlatCollection.utils.CollectionManager;
 
 import java.io.Serializable;
-import java.util.HashMap;
 
 /**
- * output all elements of the collection in a string representation to the standard output stream
+ * sort the collection in the natural order
  */
-
-public class ShowCommand implements Command, Serializable {
-    //private CollectionManager collection;
+public class SortCommand implements Command, Serializable {
     private AbstractArgument<?>[] params = {};
-    private String information = "'show' - вывести в стандартный поток вывода все элементы коллекции в строковом представлении";
-    private HashMap<String, AbstractArgument<?>> args;
+    private String information = "'sort' - отсортировать коллекцию в естественном порядке";
 
-    public ShowCommand() {
+    public SortCommand() {
+
     }
 
     /**
@@ -24,10 +21,14 @@ public class ShowCommand implements Command, Serializable {
      */
     @Override
     public String execute(CollectionManager collection) {
-        if (collection.getSize() == 0) {
-            return "Коллекция пустая";
+        collection.sortCollection();
+        String result = collection.toLongStringWithoutSort();
+        if (result.equals("")) {
+            result = "Коллекция пуста, и сортировать нечего...";
+        } else {
+            result = "Коллекция успешно отсортированна:\n" + result;
         }
-        return collection.toLongString();
+        return result;
     }
 
     /**
@@ -40,7 +41,7 @@ public class ShowCommand implements Command, Serializable {
 
     @Override
     public String getName() {
-        return "show";
+        return "sort";
     }
 
     /**
@@ -51,3 +52,4 @@ public class ShowCommand implements Command, Serializable {
         return information;
     }
 }
+

@@ -49,7 +49,7 @@ public class HelpCommand implements Command, Serializable {
     }
 
     @Override
-    public void putArg(String name, AbstractArgument<?> arg) {
-        args.put(name, arg);
+    public String getName() {
+        return "help";
     }
 }

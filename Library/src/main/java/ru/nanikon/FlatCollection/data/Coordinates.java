@@ -1,10 +1,12 @@
 package ru.nanikon.FlatCollection.data;
 
+import java.io.Serializable;
+
 /**
  * Additional class to describe the main one
  */
 
-public class Coordinates {
+public class Coordinates implements Serializable {
     private double x;
     private Double y; //Поле не может быть null
 

@@ -1,12 +1,13 @@
 package ru.nanikon.FlatCollection.arguments;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * Superclass of all arguments. It and its heirs are required to validate user-entered arguments before passing them to commands.
  * @param <T> type of argument value
  */
-abstract public class AbstractArgument<T> {
+abstract public class AbstractArgument<T> implements Serializable {
     protected T value;
 
     /**
@@ -35,5 +36,9 @@ abstract public class AbstractArgument<T> {
      */
     public boolean isEnum() {
         return false;
+    }
+
+    public String getName() {
+        return "name";
     }
 }

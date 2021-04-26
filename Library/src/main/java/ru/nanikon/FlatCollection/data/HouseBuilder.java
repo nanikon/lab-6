@@ -2,11 +2,13 @@ package ru.nanikon.FlatCollection.data;
 
 import ru.nanikon.FlatCollection.exceptions.NotPositiveNumberException;
 
+import java.io.Serializable;
+
 /**
  * Builder House class. Checks the fields and creates an object
  */
 
-public class HouseBuilder {
+public class HouseBuilder implements Serializable {
     private String name; //Поле может быть null
     private Long year; //Поле может быть null, Значение поля должно быть больше 0
     private Integer numberOfFloors; //Поле может быть null, Значение поля должно быть больше 0

@@ -3,20 +3,18 @@ package ru.nanikon.FlatCollection.commands;
 import ru.nanikon.FlatCollection.arguments.AbstractArgument;
 import ru.nanikon.FlatCollection.utils.CollectionManager;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
 
 /**
- * output all elements of the collection in a string representation to the standard output stream
+ * save the collection to a file
  */
-
-public class ShowCommand implements Command, Serializable {
-    //private CollectionManager collection;
+public class SaveCommand implements Command, Serializable {
     private AbstractArgument<?>[] params = {};
-    private String information = "'show' - вывести в стандартный поток вывода все элементы коллекции в строковом представлении";
-    private HashMap<String, AbstractArgument<?>> args;
+    private String information = "'save' - сохранить коллекцию в файл";
 
-    public ShowCommand() {
+    public SaveCommand() {
+
     }
 
     /**
@@ -24,10 +22,12 @@ public class ShowCommand implements Command, Serializable {
      */
     @Override
     public String execute(CollectionManager collection) {
-        if (collection.getSize() == 0) {
-            return "Коллекция пустая";
+        try {
+            collection.saveCollection();
+            return "Коллекция успешно сохранена";
+        } catch (IOException e) {
+            return "Невозможно открыть на запись файл, к которому привязана коллекция. проверьте его и попробуйте ещё раз";
         }
-        return collection.toLongString();
     }
 
     /**
@@ -40,7 +40,7 @@ public class ShowCommand implements Command, Serializable {
 
     @Override
     public String getName() {
-        return "show";
+        return "save";
     }
 
     /**

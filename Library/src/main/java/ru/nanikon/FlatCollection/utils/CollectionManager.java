@@ -8,7 +8,9 @@ import ru.nanikon.FlatCollection.exceptions.FileCollectionException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 /**
  * Performs all work with the collection. Depends on the parser of the file with the collection
@@ -137,13 +139,14 @@ public class CollectionManager {
      * @param transport A transport to remove
      */
     public String removeByTransport(Transport transport) {
-        int id = -1;
+        int id = flatsCollection.stream().filter(f -> f.getTransport().equals(transport)).map(f -> f.getId()).findFirst().orElse(-1);
+        /*int id = -1;
         for (Flat flat : flatsCollection) {
             if (flat.getTransport().equals(transport)) {
                 id = flat.getId();
                 break;
             }
-        }
+        }*/
         if (id == -1) {
             return "Не найдено квартир, у которых значение поля транспорт равно " + transport;
         } else {
@@ -199,9 +202,18 @@ public class CollectionManager {
     /**
      * @return All elements of the collection in a string-based human-readable representation
      */
-    public String toLongString() {
+    public String toLongStringWithoutSort() {
         StringBuilder info = new StringBuilder();
         for (Flat flat: flatsCollection) {
+            info.append(flat.toLongString()).append("\n");
+        }
+        String result = info.toString().trim();
+        return result;
+    }
+
+    public String toLongString() {
+        StringBuilder info = new StringBuilder();
+        for (Flat flat: flatsCollection.stream().sorted((flat1, flat2) -> (int) (flat1.getArea() - flat2.getArea())).collect(Collectors.toList())) {
             info.append(flat.toLongString()).append("\n");
         }
         String result = info.toString().trim();
@@ -215,10 +227,7 @@ public class CollectionManager {
         if (getSize() == 0) {
             return 0;
         }
-        long result = 0;
-        for (Flat flat : flatsCollection) {
-            result += flat.getNumberOfRooms();
-        }
+        long result = flatsCollection.stream().mapToLong(flat -> flat.getNumberOfRooms()).sum();
         result = result / getSize();
         return (int) result;
     }
@@ -229,10 +238,8 @@ public class CollectionManager {
      */
     public String viewFilteredInfo(View view) {
         StringBuilder result = new StringBuilder();
-        for (Flat flat : flatsCollection) {
-            if (flat.getView().compareTo(view) < 0) {
-                result.append(flat.toLongString()).append("\n");
-            }
+        for (Flat flat : flatsCollection.stream().filter((flat) -> flat.getView().compareTo(view) < 0).sorted((flat1, flat2) -> (int) (flat1.getArea() - flat2.getArea())).collect(Collectors.toList())) {
+            result.append(flat.toLongString()).append("\n");
         }
         return result.toString().trim();
     }

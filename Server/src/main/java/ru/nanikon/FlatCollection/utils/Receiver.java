@@ -8,9 +8,10 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 
 public class Receiver {
-    private ObjectInputStream is;
+    //private ObjectInputStream is;
+    private Socket socket;
     public Receiver(Socket socket) throws IOException {
-        this.is = new ObjectInputStream(socket.getInputStream());
+        this.socket = socket;
     }
 
     public String receiveString() throws ClassNotFoundException, IOException {
@@ -22,20 +23,16 @@ public class Receiver {
             result.append((char) a);
         }
         return result.toString();*/
+        ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
         String result = (String) is.readObject();
+        //is.close();
         return result;
     }
 
     public Command receiveCommand() throws IOException, ClassNotFoundException {
+        ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
         Command command = (Command) is.readObject();
+        //is.close();
         return command;
-    }
-
-    public void close() {
-        try {
-            is.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

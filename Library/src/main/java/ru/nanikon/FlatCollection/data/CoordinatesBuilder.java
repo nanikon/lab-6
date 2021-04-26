@@ -1,9 +1,11 @@
 package ru.nanikon.FlatCollection.data;
 
+import java.io.Serializable;
+
 /**
  * Builder Coordinates class. Checks the fields and creates an object
  */
-public class CoordinatesBuilder {
+public class CoordinatesBuilder implements Serializable {
     private double x;
     private Double y;
 

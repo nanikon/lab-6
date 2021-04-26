@@ -1,22 +1,20 @@
 package ru.nanikon.FlatCollection.commands;
 
+
 import ru.nanikon.FlatCollection.arguments.AbstractArgument;
 import ru.nanikon.FlatCollection.utils.CollectionManager;
 
 import java.io.Serializable;
-import java.util.HashMap;
 
 /**
- * output all elements of the collection in a string representation to the standard output stream
+ * Calculates the average value of the numberOfRooms field for the entire collection
  */
-
-public class ShowCommand implements Command, Serializable {
-    //private CollectionManager collection;
+public class AverageOfNumberOfRoomsCommand implements Command, Serializable {
     private AbstractArgument<?>[] params = {};
-    private String information = "'show' - вывести в стандартный поток вывода все элементы коллекции в строковом представлении";
-    private HashMap<String, AbstractArgument<?>> args;
+    private String information = "'average_of_number_of_rooms' - вывести среднее значение поля numberOfRooms для всех элементов коллекции";
 
-    public ShowCommand() {
+    public AverageOfNumberOfRoomsCommand() {
+
     }
 
     /**
@@ -24,10 +22,7 @@ public class ShowCommand implements Command, Serializable {
      */
     @Override
     public String execute(CollectionManager collection) {
-        if (collection.getSize() == 0) {
-            return "Коллекция пустая";
-        }
-        return collection.toLongString();
+        return "Среднее значение поля количество комнат по всем квартирам коллекции: " + collection.getAverageNumberOfRooms();
     }
 
     /**
@@ -40,7 +35,7 @@ public class ShowCommand implements Command, Serializable {
 
     @Override
     public String getName() {
-        return "show";
+        return "average_of_number_of_rooms";
     }
 
     /**

@@ -9,9 +9,9 @@ import java.net.Socket;
 import java.util.HashMap;
 
 public class Receiver {
-    private ObjectInputStream is;
+    private Socket socket;
     public Receiver(Socket socket) throws IOException {
-        this.is = new ObjectInputStream(socket.getInputStream());
+        this.socket = socket;
     }
 
     public String receive() {
@@ -29,6 +29,7 @@ public class Receiver {
         return result.toString();*/
         String result = null;
         try {
+            ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
             result = (String) is.readObject();
         } catch (IOException e) {
             System.out.println("Сервер отвалился");
@@ -41,6 +42,7 @@ public class Receiver {
     public HashMap<String, Command> receiveMap()  {
         HashMap<String, Command> commands = null;
         try {
+            ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
             commands = (HashMap<String, Command>) is.readObject();
         } catch (IOException e) {
             System.out.println("Что-то не то");
@@ -48,13 +50,5 @@ public class Receiver {
             System.out.println("Не смог найти класс");
         }
         return commands;
-    }
-
-    public void close() {
-        try {
-            is.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

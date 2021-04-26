@@ -7,21 +7,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class Sender {
-    private ObjectOutputStream os;
+    private Socket socket;
+    //private ObjectOutputStream os;
 
     public Sender(Socket socket) throws IOException {
-        os = new ObjectOutputStream(socket.getOutputStream());
+        this.socket = socket;
     }
 
     public void sendString(String message) throws IOException {
+        ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
         os.writeObject(message);
+        //os.close();
     }
 
     public void sendMap(HashMap<?, ?> map) throws IOException {
+        ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
         os.writeObject(map);
-    }
-
-    public void close() throws IOException {
-        os.close();
+        //os.close();
     }
 }

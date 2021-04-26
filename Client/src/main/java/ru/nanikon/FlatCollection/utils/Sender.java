@@ -4,22 +4,19 @@ import ru.nanikon.FlatCollection.commands.Command;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 public class Sender {
-    private ObjectOutputStream os;
+    private Socket socket;
 
     public Sender(Socket socket) {
-        try {
-            os = new ObjectOutputStream(socket.getOutputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.socket = socket;
     }
 
     public void sendString(String message) {
         try {
-            os.writeObject(message);
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+            oos.writeObject(message);
+            //oos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -27,13 +24,11 @@ public class Sender {
 
     public void sendCommand(Command command) {
         try {
-            os.writeObject(command);
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+            oos.writeObject(command);
+            //oos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void close() throws IOException {
-        os.close();
     }
 }

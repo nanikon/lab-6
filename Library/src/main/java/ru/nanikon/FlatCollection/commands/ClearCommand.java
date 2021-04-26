@@ -4,19 +4,15 @@ import ru.nanikon.FlatCollection.arguments.AbstractArgument;
 import ru.nanikon.FlatCollection.utils.CollectionManager;
 
 import java.io.Serializable;
-import java.util.HashMap;
 
 /**
- * output all elements of the collection in a string representation to the standard output stream
+ * Clear collection
  */
-
-public class ShowCommand implements Command, Serializable {
-    //private CollectionManager collection;
+public class ClearCommand implements Command, Serializable {
     private AbstractArgument<?>[] params = {};
-    private String information = "'show' - вывести в стандартный поток вывода все элементы коллекции в строковом представлении";
-    private HashMap<String, AbstractArgument<?>> args;
+    private String information = "'clear' - очистить коллекцию";
 
-    public ShowCommand() {
+    public ClearCommand() {
     }
 
     /**
@@ -24,10 +20,8 @@ public class ShowCommand implements Command, Serializable {
      */
     @Override
     public String execute(CollectionManager collection) {
-        if (collection.getSize() == 0) {
-            return "Коллекция пустая";
-        }
-        return collection.toLongString();
+        collection.clearCollection();
+        return "Коллекция успешно очищена";
     }
 
     /**
@@ -40,7 +34,7 @@ public class ShowCommand implements Command, Serializable {
 
     @Override
     public String getName() {
-        return "show";
+        return "clear";
     }
 
     /**

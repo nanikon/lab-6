@@ -3,6 +3,7 @@ package ru.nanikon.FlatCollection.data;
 import ru.nanikon.FlatCollection.exceptions.BooleanInputException;
 import ru.nanikon.FlatCollection.exceptions.NotPositiveNumberException;
 
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 
@@ -10,7 +11,7 @@ import java.util.HashSet;
  * Builder Flat class. Checks the fields and creates an object. Contains the Coordinates and House builders
  */
 
-public class FlatBuilder {
+public class FlatBuilder implements Serializable {
     private int id; //Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
     private String name; //Поле не может быть null, Строка не может быть пустой
     private Coordinates coordinates; //Поле не может быть null

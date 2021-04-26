@@ -22,5 +22,7 @@ public interface Command {
      */
     AbstractArgument<?>[] getArgs();
 
-    void putArg(String name, AbstractArgument<?> arg);
+    //void putArg(String name, AbstractArgument<?> arg);
+
+    String getName();
 }

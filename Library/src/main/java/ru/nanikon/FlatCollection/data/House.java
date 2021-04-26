@@ -1,10 +1,12 @@
 package ru.nanikon.FlatCollection.data;
 
+import java.io.Serializable;
+
 /**
  * Additional class to describe the main one
  */
 
-public class House {
+public class House implements Serializable {
     private String name; //Поле может быть null
     private Long year; //Поле может быть null, Значение поля должно быть больше 0
     private Integer numberOfFloors; //Поле может быть null, Значение поля должно быть больше 0
