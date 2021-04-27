@@ -3,7 +3,6 @@ package ru.nanikon.FlatCollection.utils;
 import ru.nanikon.FlatCollection.commands.Command;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.HashMap;
@@ -15,18 +14,6 @@ public class Receiver {
     }
 
     public String receive() {
-        /*StringBuilder result = new StringBuilder();
-        try {
-            int a = is.read();
-            result.append((char) a);
-            while (is.available() > 0) {
-                a = is.read();
-                result.append((char) a);
-            }
-        } catch (IOException e) {
-            System.out.println("сервер отвалился");
-        }
-        return result.toString();*/
         String result = null;
         try {
             ObjectInputStream is = new ObjectInputStream(socket.getInputStream());

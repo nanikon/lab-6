@@ -36,19 +36,15 @@ public class Server {
                 Sender sender = new Sender(s);
                 Receiver receiver = new Receiver(s);
                 String filename = receiver.receiveString();
+                System.out.println("название файла получено");
                 JsonLinkedListParser parser = new JsonLinkedListParser(filename);
                 CollectionManager collectionManager = new CollectionManager(parser);
-                //Deque<String> history = new ArrayDeque<>();
                 HashMap<String, Command> commands = loadCommand();
                 sender.sendMap(commands);
                 boolean work = true;
                 while (work) {
                     try {
                         Command command = receiver.receiveCommand();
-                        /*if (history.size() == 8) {
-                            String lastCommand = history.remove();
-                        }
-                        history.add(command.getName());*/
                         String answer = command.execute(collectionManager);
                         sender.sendString(answer);
                     } catch (StopConnectException e) {

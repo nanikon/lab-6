@@ -9,6 +9,7 @@ import ru.nanikon.FlatCollection.commands.HistoryCommand;
 import ru.nanikon.FlatCollection.exceptions.NotPositiveNumberException;
 import ru.nanikon.FlatCollection.exceptions.ScriptException;
 import ru.nanikon.FlatCollection.utils.ArgParser;
+import ru.nanikon.FlatCollection.utils.Connection;
 import ru.nanikon.FlatCollection.utils.Receiver;
 import ru.nanikon.FlatCollection.utils.Sender;
 
@@ -21,8 +22,9 @@ import java.util.*;
 
 public class Client {
     private Socket s;
-    private Sender sender;
-    private Receiver receiver;
+    //private Sender sender;
+    //private Receiver receiver;
+    private Connection connection;
     private String filename;
     public static String PS1 = "$";
     public static String PS2 = ">";
@@ -31,8 +33,10 @@ public class Client {
     public Client(String addr, int port, String filename) {
         try {
             s = new Socket(addr, port);
-            sender = new Sender(s);
-            receiver = new Receiver(s);
+            //sender = new Sender(s);
+            //receiver = new Receiver(s);
+            this.connection = new Connection();
+            connection.startConnection(addr, port);
             this.filename = filename;
         } catch (IOException e) {
             System.out.println("Не смог подключиться к серверу");
@@ -40,8 +44,9 @@ public class Client {
     }
 
     public void run() {
-        sender.sendString(filename);
-        HashMap<String, Command> commands = receiver.receiveMap();
+        connection.sendString(filename);
+        System.out.println("название файла отправлено");
+        HashMap<String, Command> commands = connection.receiveMap();
         endGame = ((ExitCommand) commands.get("exit")).getEnd();
         HistoryCommand history = (HistoryCommand) commands.get("history");
         Scanner scr = new Scanner(System.in);
@@ -111,8 +116,8 @@ public class Client {
                     } else {
                         scannerStack.push(scr);
                         history.putCommand(nameCommand);
-                        sender.sendCommand(command);
-                        String answer = receiver.receive();
+                        connection.sendCommand(command);
+                        String answer = connection.receive();
                         System.out.println(answer);
                         scr = scannerStack.pop();
                         if (answer.equals(endGame)) {
