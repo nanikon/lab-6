@@ -31,21 +31,23 @@ public class Client {
     private String endGame = "";
 
     public Client(String addr, int port, String filename) {
-        try {
+        this.connection = new Connection();
+        connection.startConnection(addr, port);
+        this.filename = filename;
+        /*try {
             s = new Socket(addr, port);
-            //sender = new Sender(s);
-            //receiver = new Receiver(s);
-            this.connection = new Connection();
-            connection.startConnection(addr, port);
-            this.filename = filename;
+            sender = new Sender(s);
+            receiver = new Receiver(s);
         } catch (IOException e) {
             System.out.println("Не смог подключиться к серверу");
-        }
+        }*/
     }
 
     public void run() {
         connection.sendString(filename);
+        //sender.sendString(filename);
         System.out.println("название файла отправлено");
+        //HashMap<String, Command> commands = receiver.receiveMap();
         HashMap<String, Command> commands = connection.receiveMap();
         endGame = ((ExitCommand) commands.get("exit")).getEnd();
         HistoryCommand history = (HistoryCommand) commands.get("history");
@@ -118,9 +120,12 @@ public class Client {
                         history.putCommand(nameCommand);
                         connection.sendCommand(command);
                         String answer = connection.receive();
+                        //sender.sendCommand(command);
+                        //String answer = receiver.receive();
                         System.out.println(answer);
                         scr = scannerStack.pop();
                         if (answer.equals(endGame)) {
+                            connection.stopConnection();
                             System.exit(0);
                         }
                     }

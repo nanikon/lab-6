@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -19,6 +18,7 @@ public class Connection {
 
     public void startConnection(String host, int serverPort) {
         try {
+            System.out.println("вошел в соединение");
             selector = Selector.open();
             serverSocketChannel = SocketChannel.open();
             serverSocketChannel.configureBlocking(false);
@@ -45,11 +45,10 @@ public class Connection {
 
     public void sendString(String message) {
         try {
-            ByteBuffer outBuffer = ByteBuffer.allocate(10000);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
             objectOutputStream.writeObject(message);
-            outBuffer.put(byteArrayOutputStream.toByteArray());
+            ByteBuffer outBuffer = ByteBuffer.wrap(byteArrayOutputStream.toByteArray());
             while (true) {
                 selector.select();
                 Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
@@ -60,6 +59,7 @@ public class Connection {
                         SocketChannel channel = (SocketChannel) key.channel();
                         channel.write(outBuffer);
                         if (outBuffer.remaining() < 1) {
+                            System.out.println("сообщение отправлено " + new String(outBuffer.array(), 0, outBuffer.position()));
                             return;
                         }
                     }
@@ -71,11 +71,10 @@ public class Connection {
 
     public void sendCommand(Command command) {
         try {
-            ByteBuffer outBuffer = ByteBuffer.allocate(10000);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
             objectOutputStream.writeObject(command);
-            outBuffer.put(byteArrayOutputStream.toByteArray());
+            ByteBuffer outBuffer = ByteBuffer.wrap(byteArrayOutputStream.toByteArray());
             while (true) {
                 selector.select();
                 Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
@@ -105,8 +104,8 @@ public class Connection {
                     SelectionKey selectionKey = iterator.next();
                     if (selectionKey.isReadable()) {
                         SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
-                        ByteBuffer byteBuffer = ByteBuffer.allocate(2048);
-                        ByteBuffer outBuffer = ByteBuffer.allocate(2048);
+                        ByteBuffer byteBuffer = ByteBuffer.allocate(10000000);
+                        ByteBuffer outBuffer = ByteBuffer.allocate(10000000);
                         try {
                             while (socketChannel.read(byteBuffer) > 0) {
                                 byteBuffer.flip();
@@ -139,24 +138,38 @@ public class Connection {
         try {
             while (true) {
                 selector.select();
-                ByteBuffer buffer = ByteBuffer.allocate(1024);
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
                 Iterator<SelectionKey> iterator = selectedKeys.iterator();
                 while (iterator.hasNext()) {
                     SelectionKey selectionKey = iterator.next();
                     if (selectionKey.isReadable()) {
-                        SocketChannel clientSocketChannel = (SocketChannel) selectionKey.channel();
-                        StringBuilder message = new StringBuilder();
-                        while (clientSocketChannel.read(buffer) > 0){
-                            message.append(new String(buffer.array(), 0, buffer.position()));
-                            buffer.compact();
+                        SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
+                        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+                        ByteBuffer outBuffer = ByteBuffer.allocate(1024);
+                        try {
+                            while (socketChannel.read(byteBuffer) > 0) {
+                                byteBuffer.flip();
+                                outBuffer.put(byteBuffer);
+                                byteBuffer.compact();
+                                try {
+                                    ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(outBuffer.array()));
+                                    return (String) objectInputStream.readObject();
+                                } catch (StreamCorruptedException ignored) {
+                                } catch (ClassNotFoundException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        } catch (IOException e) {
+                            if (e.getMessage().equals("An established connection was aborted by the software in your host machine")) {
+                                socketChannel.close();
+                            }
                         }
-                        return message.toString();
                     }
                     iterator.remove();
                 }
             }
         } catch (IOException e) {
+            e.printStackTrace();
             return null;
         }
     }
