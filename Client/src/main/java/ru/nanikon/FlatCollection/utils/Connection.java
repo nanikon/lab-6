@@ -15,10 +15,15 @@ import java.util.Set;
 public class Connection {
     private SocketChannel serverSocketChannel;
     private Selector selector;
+    private String host;
+    private int serverPort;
+    private String filename;
 
-    public void startConnection(String host, int serverPort) {
+    public void startConnection(String host, int serverPort, String filename) {
         try {
-            System.out.println("вошел в соединение");
+            this.host = host;
+            this.serverPort = serverPort;
+            this.filename = filename;
             selector = Selector.open();
             serverSocketChannel = SocketChannel.open();
             serverSocketChannel.configureBlocking(false);
@@ -35,11 +40,20 @@ public class Connection {
                         if (channel.isConnectionPending()) {
                             channel.finishConnect();
                         }
+                        sendString(filename);
                         return;
                     }
                 }
             }
         } catch (IOException e) {
+            System.out.println("Не удается подключится к серверу. Пробуем снова через 5 сек (но возможно вы ошиблись с хостом и портом и наши попытки бесполезны)");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException interruptedException) {
+                interruptedException.printStackTrace();
+            }
+            startConnection(host, serverPort, filename);
+            //System.exit(0);
         }
     }
 
@@ -59,13 +73,16 @@ public class Connection {
                         SocketChannel channel = (SocketChannel) key.channel();
                         channel.write(outBuffer);
                         if (outBuffer.remaining() < 1) {
-                            System.out.println("сообщение отправлено " + new String(outBuffer.array(), 0, outBuffer.position()));
+                            //System.out.println("сообщение отправлено " + new String(outBuffer.array(), 0, outBuffer.position()));
                             return;
                         }
                     }
                 }
             }
         } catch (IOException e) {
+            System.out.println("Упс, сервер отвалился... Пробую переподключиться");
+            startConnection(host, serverPort, filename);
+            //System.exit(0);
         }
     }
 
@@ -85,12 +102,17 @@ public class Connection {
                         SocketChannel channel = (SocketChannel) key.channel();
                         channel.write(outBuffer);
                         if (outBuffer.remaining() < 1) {
+                            //System.out.println("Послал команду");
                             return;
                         }
                     }
                 }
             }
         } catch (IOException e) {
+            System.out.println("Упс, сервер отвалился... Пробую переподключиться");
+            startConnection(host, serverPort, filename);
+            //System.out.println("Переподключился");
+            sendCommand(command);
         }
     }
 
@@ -120,16 +142,16 @@ public class Connection {
                                 }
                             }
                         } catch (IOException e) {
-                            if (e.getMessage().equals("An established connection was aborted by the software in your host machine")) {
-                                socketChannel.close();
-                            }
+                            System.out.println("Упс, сервер отвалился... Приходи в следующий раз!");
+                            socketChannel.close();
                         }
                     }
                     iterator.remove();
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Упс, сервер отвалился... Приходи в следующий раз!");
+            System.exit(0);
             return null;
         }
     }
@@ -144,8 +166,8 @@ public class Connection {
                     SelectionKey selectionKey = iterator.next();
                     if (selectionKey.isReadable()) {
                         SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
-                        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-                        ByteBuffer outBuffer = ByteBuffer.allocate(1024);
+                        ByteBuffer byteBuffer = ByteBuffer.allocate(100000);
+                        ByteBuffer outBuffer = ByteBuffer.allocate(100000);
                         try {
                             while (socketChannel.read(byteBuffer) > 0) {
                                 byteBuffer.flip();
@@ -160,16 +182,16 @@ public class Connection {
                                 }
                             }
                         } catch (IOException e) {
-                            if (e.getMessage().equals("An established connection was aborted by the software in your host machine")) {
-                                socketChannel.close();
-                            }
+                            System.out.println("Упс, сервер отвалился... Приходи в следующий раз!");
+                            socketChannel.close();
                         }
                     }
                     iterator.remove();
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Упс, сервер отвалился... Приходи в следующий раз!");
+            System.exit(0);
             return null;
         }
     }
@@ -177,8 +199,7 @@ public class Connection {
     public void stopConnection() {
         try {
             serverSocketChannel.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignored) {
         }
     }
 }

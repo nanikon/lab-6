@@ -29,10 +29,12 @@ public class Client {
     public static String PS1 = "$";
     public static String PS2 = ">";
     private String endGame = "";
+    HashMap<String, Command> commands;
 
     public Client(String addr, int port, String filename) {
         this.connection = new Connection();
-        connection.startConnection(addr, port);
+        System.out.println("Подключаемся к серверу...");
+        connection.startConnection(addr, port, filename);
         this.filename = filename;
         /*try {
             s = new Socket(addr, port);
@@ -43,12 +45,22 @@ public class Client {
         }*/
     }
 
-    public void run() {
+    public void start() {
         connection.sendString(filename);
+    }
+
+    public void run() {
+        //connection.sendString(filename);
         //sender.sendString(filename);
-        System.out.println("название файла отправлено");
+        //System.out.println("название файла отправлено");
         //HashMap<String, Command> commands = receiver.receiveMap();
-        HashMap<String, Command> commands = connection.receiveMap();
+        try {
+            commands = connection.receiveMap();
+        } catch (ClassCastException e) {
+            System.out.println("Имя файла неверное");
+            connection.stopConnection();
+            System.exit(0);
+        }
         endGame = ((ExitCommand) commands.get("exit")).getEnd();
         HistoryCommand history = (HistoryCommand) commands.get("history");
         Scanner scr = new Scanner(System.in);
