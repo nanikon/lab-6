@@ -41,7 +41,7 @@ public class Server {
         while (true) {
             try {
                 Socket s = ss.accept();
-                logger.info("Клиент успешно подключился" + s);
+                logger.info("Клиент успешно подключился " + s);
                 Sender sender = new Sender(s);
                 logger.info("Создан отправитель для клиента");
                 Receiver receiver = new Receiver(s);
@@ -58,7 +58,7 @@ public class Server {
                     logger.info("Клиенту отправлена мапа доступных ему команд");
                 } catch (FileCollectionException | IOException e) {
                     sender.sendString(e.getMessage() + ". Проверьте его и запустите программу ещё раз.");
-                    logger.error(e.getMessage() + "Работа завершена");
+                    logger.error(e.getMessage() + " Работа завершена");
                     stopConnection(s);
                     continue offer;
                 }
@@ -79,7 +79,7 @@ public class Server {
                         logger.info("Соединение с клиентом завершено");
                     } catch (SocketException e) {
                         work = false;
-                        logger.warn("Клиент отвалился" + s);
+                        logger.warn("Клиент отвалился " + s);
                         stopConnection(s);
                         logger.info("Соединение с клиентом завершено");
                     }
@@ -87,7 +87,7 @@ public class Server {
             } catch (IOException e) {
                 logger.warn("Клиент отвалился. Работа с ним завершена");
             } catch (ClassNotFoundException e) {
-                logger.error("При десериализации не смог найти класс", e);
+                logger.error("При десериализации не смог найти класс ", e);
             }
         }
     }

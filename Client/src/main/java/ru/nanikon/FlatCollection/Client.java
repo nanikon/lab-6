@@ -10,8 +10,6 @@ import ru.nanikon.FlatCollection.exceptions.NotPositiveNumberException;
 import ru.nanikon.FlatCollection.exceptions.ScriptException;
 import ru.nanikon.FlatCollection.utils.ArgParser;
 import ru.nanikon.FlatCollection.utils.Connection;
-import ru.nanikon.FlatCollection.utils.Receiver;
-import ru.nanikon.FlatCollection.utils.Sender;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,45 +20,52 @@ import java.util.*;
 
 public class Client {
     private Socket s;
-    //private Sender sender;
-    //private Receiver receiver;
-    private Connection connection;
-    private String filename;
+    private final Connection connection;
+    private final String filename;
     public static String PS1 = "$";
     public static String PS2 = ">";
     private String endGame = "";
     HashMap<String, Command> commands;
+    private final int port;
+    private final String addr;
 
     public Client(String addr, int port, String filename) {
         this.connection = new Connection();
         System.out.println("Подключаемся к серверу...");
-        connection.startConnection(addr, port, filename);
         this.filename = filename;
-        /*try {
-            s = new Socket(addr, port);
-            sender = new Sender(s);
-            receiver = new Receiver(s);
-        } catch (IOException e) {
-            System.out.println("Не смог подключиться к серверу");
-        }*/
+        this.port = port;
+        this.addr = addr;
     }
 
     public void start() {
-        connection.sendString(filename);
+        for (int i = 0; i < 5; i++) {
+            try {
+                connection.startConnection(addr, port);
+                connection.sendString(filename);
+                Thread.sleep(1000);
+                commands = connection.receiveMap();
+                System.out.println("Подключились!");
+                return;
+            } catch (InterruptedException e) {
+                System.out.println("Э, с потоком все хорошо должно быть!");
+            } catch (ClassCastException e) {
+                System.out.println("Имя файла неверное");
+                connection.stopConnection();
+                System.exit(0);
+            } catch (IOException e) {
+                System.out.println("Не удается подключится к серверу. Пробуем снова через 5 сек");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+        System.out.println("Кажется, сегодня сервер не встанет. Приходи в следующий раз!");
+        connection.stopConnection();
+        System.exit(0);
     }
 
     public void run() {
-        //connection.sendString(filename);
-        //sender.sendString(filename);
-        //System.out.println("название файла отправлено");
-        //HashMap<String, Command> commands = receiver.receiveMap();
-        try {
-            commands = connection.receiveMap();
-        } catch (ClassCastException e) {
-            System.out.println("Имя файла неверное");
-            connection.stopConnection();
-            System.exit(0);
-        }
         endGame = ((ExitCommand) commands.get("exit")).getEnd();
         HistoryCommand history = (HistoryCommand) commands.get("history");
         Scanner scr = new Scanner(System.in);
@@ -71,12 +76,12 @@ public class Client {
             if (pathStack.isEmpty()) {
                 System.out.print(PS1);
             }
-            String[] line = new String[0];
+            String[] line;
             try {
                 line = scr.nextLine().trim().split("[ \t\f]+");
             } catch (NoSuchElementException e) {
                 System.out.println("Вы завершили выполнение программы");
-                System.exit(0);
+                break;
             }
             String nameCommand = line[0];
             int i = 1;
@@ -130,16 +135,19 @@ public class Client {
                     } else {
                         scannerStack.push(scr);
                         history.putCommand(nameCommand);
-                        connection.sendCommand(command);
-                        String answer = connection.receive();
-                        //sender.sendCommand(command);
-                        //String answer = receiver.receive();
-                        System.out.println(answer);
-                        scr = scannerStack.pop();
-                        if (answer.equals(endGame)) {
-                            connection.stopConnection();
-                            System.exit(0);
+                        try {
+                            connection.sendCommand(command);
+                            Thread.sleep(1000);
+                            String answer = connection.receive();
+                            System.out.println(answer);
+                            if (answer.equals(endGame)) {
+                                break;
+                            }
+                        } catch (IOException e) {
+                            System.out.println("Упс, сервер отвалился и эту команду отправить не удалось. Если удастся переподключиться, вам придётся её повторить.");
+                            start();
                         }
+                        scr = scannerStack.pop();
                     }
                 } else if (nameCommand.equals("execute_script")) {
                     if (line.length != 2) {
@@ -181,6 +189,7 @@ public class Client {
                 }
             } catch (OutOfMemoryError | StackOverflowError e) {
                 System.out.println("Программа дошла до переполнения кучи");
+            } catch (InterruptedException ignored) {
             }
             while (!(pathStack.isEmpty() || scr.hasNextLine())) {
                 scr.close();
@@ -189,6 +198,8 @@ public class Client {
                 System.out.println("Завершена работа файла " + path.getFileName());
             }
         }
+        connection.stopConnection();
+        System.exit(0);
     }
 
     public void execute_script(String fileName, Stack<Path> pathStack, Stack<Scanner> scannerStack) {
@@ -214,8 +225,8 @@ public class Client {
         try {
             scannerStack.push(new Scanner(file, "UTF-8"));
         } catch (FileNotFoundException e) {
-            System.out.println("Исполняемый файл не найден");
             Path path = pathStack.pop();
+            System.out.println("Не найден исполняемый файл " + path.getFileName());
             return;
         }
         System.out.println("Начинается выполнение файла " + fileName);

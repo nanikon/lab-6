@@ -17,8 +17,8 @@ public class App {
             System.exit(0);
         }
         Client client = new Client(host, port, filename);
-        //Client client = new Client("localhost", 8881, "esample.json");
-        //client.start();
+        //Client client = new Client("localhost", 3893, "example.json");
+        client.start();
         client.run();
     }
 }
